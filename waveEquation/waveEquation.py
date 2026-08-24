@@ -58,10 +58,10 @@ def boundary_values(model, x, y, t):
     return u
 
 #Compute the Initial Condition loss
-def inital_displacement_values(model, x, y):
+def inital_displacement_values(model, x, y, m, n):
 
-    #at t = 0, u = sin(pi*x)sin(pi*y)
-    u_0 = torch.sin(x*math.pi) * torch.sin(y*math.pi)
+    #at t = 0, u = sin(m*pi*x)sin(n*pi*y)
+    u_0 = torch.sin(m*x*math.pi) * torch.sin(n*y*math.pi)
     t = torch.zeros(100, 1)
 
     inputs = torch.cat([x, y, t], dim=1)
@@ -96,7 +96,7 @@ x = torch.rand(100, 1)
 y = torch.rand(100, 1)
 t = 1.5*torch.rand(100, 1)
 
-for epoch in range(1000):
+for epoch in range(2000):
     optimizer.zero_grad()
 
     #Compute PDE residual loss
@@ -116,12 +116,12 @@ for epoch in range(1000):
     bc_loss = torch.mean(x_0**2) + torch.mean(x_1**2) + torch.mean(y_0**2) + torch.mean(y_1**2)
 
     #Compute initial condition loss
-    inital_disp = inital_displacement_values(model, x, y)
+    inital_disp = inital_displacement_values(model, x, y, 2, 1)
     initial_vel = inital_vel_values(model, x, y)
 
     initial_loss = torch.mean(inital_disp**2) + torch.mean(initial_vel**2)
 
-    #weights
+    #Weights
     w_1 = 1
     w_2 = 100
     w_3 = 100
@@ -137,7 +137,7 @@ for epoch in range(1000):
 
 #Visualise solution with animation
 
-n = 100 #number of points of plot
+n = 1000 #Number of points of plot
 
 x = np.linspace(0, 1, n)
 y = np.linspace(0, 1, n)
@@ -152,6 +152,7 @@ Y_flat = Y.reshape(-1, 1)
 #Convert to pytorch tensors
 x_tensor = torch.tensor(X_flat, dtype=torch.float32)
 y_tensor = torch.tensor(Y_flat, dtype=torch.float32)
+
 #Function to predict surfae at time t0
 def pred_surface(model, t0):
     #Create time column
@@ -176,7 +177,7 @@ def pred_surface(model, t0):
 
     return U
 
-times = np.linspace(0, 5, 10)
+times = np.linspace(0, 10, 20)
 
 #Plot in 3D colormap
 FRAMES = 100
@@ -203,5 +204,5 @@ def animate(frame):
 
     return surf
 
-ani = animation.FuncAnimation(fig=fig, func=animate, frames=FRAMES, interval=30)
+ani = animation.FuncAnimation(fig=fig, func=animate, frames=FRAMES, interval=10)
 plt.show()
